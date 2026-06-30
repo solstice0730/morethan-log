@@ -91,7 +91,6 @@ export const getPosts = async () => {
           collectionView,
           {
             limit: 999,
-            spaceId: rawMetadata?.space_id,
           }
         )
 
