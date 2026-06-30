@@ -8,7 +8,7 @@ export default function getAllPageIds(
   const collectionQuery = response.collection_query
 
   if (!collectionQuery) {
-    console.warn("[getAllPageIds] response.collection_query is empty")
+    console.warn("[getAllPageIds] collection_query is empty")
     return []
   }
 
@@ -35,6 +35,8 @@ export default function getAllPageIds(
 
     pageIds = [...pageSet]
   }
+
+  console.log("[getAllPageIds] pageIds count:", pageIds.length)
 
   return pageIds
 }
