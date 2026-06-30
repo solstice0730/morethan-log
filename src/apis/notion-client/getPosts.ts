@@ -14,16 +14,45 @@ import { TPosts } from "src/types"
 export const getPosts = async () => {
   let id = CONFIG.notionConfig.pageId as string
   const api = new NotionAPI()
-
+  
   const response = await api.getPage(id)
+  
+  console.log("[Notion Debug] raw pageId:", id)
+  console.log("[Notion Debug] block count:", Object.keys(response.block ?? {}).length)
+  console.log("[Notion Debug] collection count:", Object.keys(response.collection ?? {}).length)
+  console.log(
+    "[Notion Debug] collection_query count:",
+    Object.keys(response.collection_query ?? {}).length
+  )
+  console.log("[Notion Debug] collection keys:", Object.keys(response.collection ?? {}))
+  console.log(
+    "[Notion Debug] collection_query keys:",
+    Object.keys(response.collection_query ?? {})
+  )
+  
   id = idToUuid(id)
-  const collectionValue = Object.values(response.collection)[0]?.value as any
+  
+  const collectionValue = Object.values(response.collection ?? {})[0]?.value as any
   const collection = collectionValue?.value ?? collectionValue
-  const block = response.block
+  const block = response.block ?? {}
   const schema = collection?.schema
-
-  const blockValue = (block[id].value as any)?.value ?? block[id].value
+  
+  console.log("[Notion Debug] schema exists:", !!schema)
+  
+  const blockValue = (block?.[id]?.value as any)?.value ?? block?.[id]?.value
   const rawMetadata = blockValue
+  
+  console.log("[Notion Debug] rawMetadata type:", rawMetadata?.type)
+  
+  if (!schema) {
+    console.warn("[Notion Debug] schema is empty")
+    return []
+  }
+  
+  if (!rawMetadata) {
+    console.warn("[Notion Debug] rawMetadata is empty")
+    return []
+  }
 
   // Check Type
   if (
@@ -34,6 +63,9 @@ export const getPosts = async () => {
   } else {
     // Construct Data
     const pageIds = getAllPageIds(response)
+    
+    console.log("[Notion Debug] pageIds count:", pageIds.length)
+    console.log("[Notion Debug] pageIds sample:", pageIds.slice(0, 5))
     const data = []
     for (let i = 0; i < pageIds.length; i++) {
       const id = pageIds[i]
@@ -47,6 +79,8 @@ export const getPosts = async () => {
         (pageBlockValue?.format as any)?.page_full_width ?? false
 
       data.push(properties)
+      console.log("[Notion Debug] posts data count:", data.length)
+      console.log("[Notion Debug] posts data sample:", data.slice(0, 3))
     }
 
     // Sort by date
