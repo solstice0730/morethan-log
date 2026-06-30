@@ -6,21 +6,35 @@ export default function getAllPageIds(
   viewId?: string
 ) {
   const collectionQuery = response.collection_query
-  const views = Object.values(collectionQuery)[0]
+
+  if (!collectionQuery) {
+    console.warn("[getAllPageIds] response.collection_query is empty")
+    return []
+  }
+
+  const views = Object.values(collectionQuery)[0] as any
+
+  if (!views) {
+    console.warn("[getAllPageIds] views is empty")
+    return []
+  }
 
   let pageIds: ID[] = []
+
   if (viewId) {
     const vId = idToUuid(viewId)
-    pageIds = views[vId]?.blockIds
+    pageIds = views[vId]?.blockIds ?? []
   } else {
     const pageSet = new Set<ID>()
-    // * type not exist
+
     Object.values(views).forEach((view: any) => {
       view?.collection_group_results?.blockIds?.forEach((id: ID) =>
         pageSet.add(id)
       )
     })
+
     pageIds = [...pageSet]
   }
+
   return pageIds
 }
